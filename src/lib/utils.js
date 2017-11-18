@@ -25,7 +25,7 @@ const getStrBySecs = (secs) => {
 
 const getRoundNum = (num, len=2) => {
   return Math.round(num * Math.pow(10, len)) / Math.pow(10, len);
-}
+};
 
 const getSpeedByBytes = (bytes) => {
   let str = '0 bytes/sec';
@@ -33,7 +33,7 @@ const getSpeedByBytes = (bytes) => {
     const kbs = getRoundNum(bytes / 1024);
     const mbs = getRoundNum(bytes / (1024 * 1024));
     const gbs = getRoundNum(bytes / (1024 * 1024 * 1024));
-    
+
     if (parseFloat(gbs) >= 1) {
       str = `${gbs} Gb/sec`;
     } else if (parseFloat(mbs) >= 1) {
@@ -48,7 +48,16 @@ const getSpeedByBytes = (bytes) => {
   return str;
 };
 
+const clearFileName = (filename) => {
+  if (filename && filename.trim().length > 0) {
+    return filename.replace(/\//g, '_').replace(/\\/g, '_');
+  } else {
+    return filename;
+  }
+};
+
 module.exports = {
   getStrBySecs,
-  getSpeedByBytes
+  getSpeedByBytes,
+  clearFileName,
 };

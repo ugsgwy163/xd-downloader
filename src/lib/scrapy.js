@@ -59,7 +59,7 @@ const fetchListPage = (opts) => {
         const $element = $(element);
         const item = {
           title: $element.find('.thumbnail-info-wrapper.clearfix').find('.title a').text(),
-          key: element.attribs["_vkey"],
+          key: element.attribs['_vkey'],
         };
         items.push(item);
       });
@@ -125,7 +125,7 @@ const fetchDownloadInfo = (key) => {
     });
   });
   return pm;
-}
+};
 
 const downloadVideo = (ditem) => {
   let filename = moment().format('YYYYMMDD');
@@ -133,6 +133,7 @@ const downloadVideo = (ditem) => {
     filename = ditem.title.trim();
   }
   filename += `_${ditem.quality}P.mp4`;
+  filename = utils.clearFileName(filename);
   const dir = config.downloadDir || './downloads';
   if (!fse.existsSync(dir)) {
     fse.mkdirpSync(dir);
