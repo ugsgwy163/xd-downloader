@@ -36,7 +36,7 @@
     ],
     "max-statements": [
       1,
-      15
+      100
     ],
     "new-cap": 1,
     "no-extend-native": 2,

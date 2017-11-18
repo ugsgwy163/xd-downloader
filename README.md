@@ -4,6 +4,12 @@ Download highest quality videos from [pornhub](https://pornhub.com).
 
 **Version 2.0 is coming now!**
 
+## Screenshots
+
+![running](./imgs/running.png)
+
+![files](./imgs/files.png)
+
 ## Features
 
 * Support proxy setting.
@@ -18,6 +24,8 @@ Download highest quality videos from [pornhub](https://pornhub.com).
 
 * Download one by one until error occurs or fetch nothing.
 
+* **Download with custom urls.**
+
 ## Requirement
 
 * Node.js 7.6.0+.
@@ -28,9 +36,37 @@ Download highest quality videos from [pornhub](https://pornhub.com).
 
 * clone this repo.
 
-* `npm install`
+* install node modules:
 
-* `npm start`
+```shell
+npm install
+```
+
+### default
+
+* run
+
+```shell
+npm start
+```
+
+### custom
+
+If you only want to download specific video(s), you can edit `src/feature/urls.js` like this:
+
+```js
+const urls = [
+  'https://www.pornhub.com/view_video.php?viewkey=ph5844dbb3a1456'
+];
+```
+
+> Add your urls as array.
+
+And then run:
+
+```shell
+npm run url
+```
 
 ## Configuration
 
@@ -50,12 +86,6 @@ If you don't need to set up proxy,just keep it empty string.
 `barEmptyChar`: the 'unfinished char' for the progress bar.
 
 `downloadDir`: the directory you want to save videos.
-
-## Screenshots
-
-![running](./imgs/running.png)
-
-![files](./imgs/files.png)
 
 ## Download speed
 

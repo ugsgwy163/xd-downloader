@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./src/test/index.js",
-    "start": "node ./src"
+    "start": "node ./src",
+    "url": "node ./src/feature/custom.js"
   },
   "repository": {
     "type": "git",

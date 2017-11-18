@@ -28,7 +28,7 @@ if (config.timeout > 0) {
   baseReqOpts.timeout = config.timeout;
 }
 
-const fetchListPage = (opts) => {
+const findKeys = (opts) => {
   const pm = new Promise((resolve, reject) => {
     let pageUrl = baseUrl;
     let queryObj = {};
@@ -54,64 +54,71 @@ const fetchListPage = (opts) => {
       }
 
       const $ = cheerio.load(body);
-      const items = [];
+      const keys = [];
       $('.videoblock.videoBox').each((idx, element) => {
-        const $element = $(element);
-        const item = {
-          title: $element.find('.thumbnail-info-wrapper.clearfix').find('.title a').text(),
-          key: element.attribs['_vkey'],
-        };
-        items.push(item);
+        const key = element.attribs['_vkey'];
+        keys.push(key);
       });
 
-      return resolve(items);
+      return resolve(keys);
     });
   });
 
   return pm;
 };
 
-const parseDownloadUrl = (bodyStr) => {
-  let ditem = null;
-  const idx = bodyStr.indexOf('mediaDefinitions');
-  if (idx !== -1) {
-    let begin;
-    let end;
-    for (let i = idx; i < bodyStr.length; i++) {
-      const tmpStr = bodyStr.substr(i, 1);
-      if (tmpStr == '[') {
-        begin = i;
-      }
+const findTitle = (bodyStr) => {
+  const $ = cheerio.load(bodyStr);
+  const title = $('title').text();
+  const arr = title.split('-');
+  arr.pop();
 
-      if (tmpStr == ']') {
-        end = i;
-        break;
-      }
+  return arr.join('-');
+};
+
+const parseDownloadInfo = (bodyStr) => {
+  let info;
+  const idx = bodyStr.indexOf('mediaDefinitions');
+
+  if (idx < 0) {
+    return info;
+  }
+
+  let begin, end;
+  for (let i = idx; i < bodyStr.length; i++) {
+    const tmpStr = bodyStr.substr(i, 1);
+    if (tmpStr === '[') {
+      begin = i;
     }
 
-    if (begin && end) {
-      const jsonStr = bodyStr.substring(begin, end + 1);
-      try {
-        let arr = JSON.parse(jsonStr);
-        arr = _.filter(arr, item => {
-          return item.videoUrl.length > 0;
-        });
-        arr = _.orderBy(arr, 'quality', 'desc');
-        if (arr.length > 0) {
-          ditem = arr[0];
-        }
-      } catch (error) {
-        console.log(error);
-      }
+    if (tmpStr === ']') {
+      end = i;
+      break;
     }
   }
 
-  return ditem;
+  if (begin >=0 && end >= 0) {
+    const jsonStr = bodyStr.substring(begin, end + 1);
+    let arr = JSON.parse(jsonStr);
+    arr = _.filter(arr, item => {
+      return item.videoUrl.length > 0;
+    });
+    arr = _.orderBy(arr, 'quality', 'desc');
+    if (arr.length > 0) {
+      info = arr[0];
+      info.title = findTitle(bodyStr);
+    }
+  }
+
+  return info;
 };
 
-const fetchDownloadInfo = (key) => {
+const findDownloadInfo = (key) => {
   const pm = new Promise((resolve, reject) => {
-    const pageUrl = `https://www.pornhub.com/view_video.php?viewkey=${key}`;
+    let pageUrl = `https://www.pornhub.com/view_video.php?viewkey=${key}`;
+    if (key.startsWith('http')) {
+      pageUrl = key;
+    }
     let opts = {
       url: pageUrl
     };
@@ -121,9 +128,10 @@ const fetchDownloadInfo = (key) => {
         return reject(err);
       }
 
-      return resolve(parseDownloadUrl(body));
+      return resolve(parseDownloadInfo(body));
     });
   });
+
   return pm;
 };
 
@@ -170,7 +178,7 @@ const downloadVideo = (ditem) => {
 };
 
 module.exports = {
-  fetchListPage,
-  fetchDownloadInfo,
+  findKeys,
+  findDownloadInfo,
   downloadVideo
 };

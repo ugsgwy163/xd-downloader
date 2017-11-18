@@ -2,38 +2,34 @@ const scrapy = require('./lib/scrapy');
 const config = require('./config.json');
 const log = require('./lib/log');
 
-let page = config.page || 1;
-let search = config.search;
+const run = async () => {
+  let page = config.page || 1;
+  let search = config.search;
 
-const scrapyTaskRun = async () => {
   try {
     while (true) {
-      const items = await scrapy.fetchListPage({
+      const opts = {
         page,
-        search
-      });
-      page++;
-      if (items.length > 0) {
-        for (const item of items) {
-          const ditem = await scrapy.fetchDownloadInfo(item.key);
-          if (ditem) {
-            ditem.title = item.title;
-            const result = await scrapy.downloadVideo(ditem);
-            log.info(result);
-            console.log('\n');
-          } else {
-            continue;
-          }
-        }
-      } else {
-        log.error('can\'t get anything from the web page!');
-        process.exit(0);
+        search,
+      };
+      const keys = await scrapy.findKeys(opts);
+      if (!keys || keys.length === 0) {
+        throw new Error('find nothing!');
       }
+
+      for (const key of keys) {
+        const info = await scrapy.findDownloadInfo(key);
+        const result = await scrapy.downloadVideo(info);
+        log.info(result);
+        console.log('\n');
+      }
+
+      page += 1;
     }
   } catch (error) {
-    log.error(error.message);
+    console.log(error);
     process.exit(0);
   }
 };
 
-scrapyTaskRun();
+run();
