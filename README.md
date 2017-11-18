@@ -22,7 +22,7 @@ Download highest quality videos from [pornhub](https://pornhub.com).
 
 * Node.js 7.6.0+.
 
-* Your network can access [pornhub.com](https://pornhub.com).
+* Your network can access to [pornhub.com](https://pornhub.com).
 
 ## Usage
 
