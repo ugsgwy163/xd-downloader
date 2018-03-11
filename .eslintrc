@@ -49,7 +49,7 @@
     ],
     "object-curly-spacing": [
       2,
-      "never"
+      "always"
     ],
     "quotes": [
       2,

@@ -1,7 +1,7 @@
 {
-  "proxyUrl": "",
-  "timeout": 0,
-  "search": "",
+  "proxyUrl": "http://127.0.0.1:1087",
+  "timeout":  0,
+  "search": "china",
   "barWidth": 60,
   "barFullChar": "=",
   "barEmptyChar": "-",

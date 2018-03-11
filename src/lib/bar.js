@@ -27,6 +27,23 @@ const show = (percent, speed) => {
   process.stderr.write(progressBar);
 };
 
+const showPer = (percent) => {
+  process.stderr.clearLine(-1);
+  process.stderr.write('\r');
+  const doneCount = parseInt(width * percent);
+  let progressBar = '[';
+
+  for (let i = 0; i < doneCount; i++) {
+    progressBar += fullChar;
+  }
+  for (let i = 0; i < width - doneCount; i++) {
+    progressBar += emptyChar;
+  }
+
+  progressBar += `]  ${parseInt(percent * 100)}%`;
+  process.stderr.write(progressBar);
+};
+
 const done = () => {
   process.stderr.clearLine(-1);
   process.stderr.write('\r');
@@ -41,5 +58,6 @@ const done = () => {
 
 module.exports = {
   show,
+  showPer,
   done
 };

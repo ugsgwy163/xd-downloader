@@ -4,7 +4,6 @@ const request = require('request');
 const path = require('path');
 const _ = require('lodash');
 const moment = require('moment');
-const progress = require('request-progress');
 
 const config = require('../config.json');
 const utils = require('./utils');
@@ -35,7 +34,7 @@ const findKeys = (opts) => {
     if (opts) {
       if (opts.search && opts.search.trim().length > 0) {
         pageUrl = `${baseUrl}/video/search`;
-        queryObj.search = opts.search.trim();
+        queryObj.search = encodeURI(opts.search.trim());
       }
 
       if (opts.page && opts.page > 1) {
@@ -46,8 +45,22 @@ const findKeys = (opts) => {
       url: pageUrl,
       qs: queryObj
     };
-    Object.assign(reqOpts, baseReqOpts);
+    // let idx = 0;
+    // let qStr = '';
+    // for (const key in reqOpts.qs) {
+    //   const val = reqOpts.qs[key];
+    //   let str = idx > 0 ? '&' : '';
+    //   str += `${key}=${val}`;
+    //   qStr += str;
+    //   idx += 1;
+    // }
 
+    // if (idx > 0) {
+    //   reqOpts.url += `?${qStr}`;
+    //   delete reqOpts.qs;
+    // }
+    Object.assign(reqOpts, baseReqOpts);
+    console.log(reqOpts);
     request(reqOpts, (err, res, body) => {
       if (err) {
         return reject(err);
@@ -97,7 +110,7 @@ const parseDownloadInfo = (bodyStr) => {
     }
   }
 
-  if (begin >=0 && end >= 0) {
+  if (begin >= 0 && end >= 0) {
     const jsonStr = bodyStr.substring(begin, end + 1);
     let arr = JSON.parse(jsonStr);
     arr = _.filter(arr, item => {
@@ -114,10 +127,12 @@ const parseDownloadInfo = (bodyStr) => {
 };
 
 const findDownloadInfo = (key) => {
+  let finalKey = key;
   const pm = new Promise((resolve, reject) => {
     let pageUrl = `https://www.pornhub.com/view_video.php?viewkey=${key}`;
     if (key.startsWith('http')) {
       pageUrl = key;
+      finalKey = key.split('=').pop();
     }
     let opts = {
       url: pageUrl
@@ -128,7 +143,10 @@ const findDownloadInfo = (key) => {
         return reject(err);
       }
 
-      return resolve(parseDownloadInfo(body));
+      const ditem = parseDownloadInfo(body);
+      ditem.key = finalKey;
+
+      return resolve(ditem);
     });
   });
 
@@ -140,7 +158,7 @@ const downloadVideo = (ditem) => {
   if (ditem.title && ditem.title.trim().length > 0) {
     filename = ditem.title.trim();
   }
-  filename += `_${ditem.quality}P.mp4`;
+  filename += `_${ditem.quality}P_${ditem.key}.mp4`;
   filename = utils.clearFileName(filename);
   const dir = config.downloadDir || './downloads';
   if (!fse.existsSync(dir)) {
@@ -157,20 +175,104 @@ const downloadVideo = (ditem) => {
     };
     Object.assign(opts, baseReqOpts);
     log.verbose(`downloading > ${filename}`);
-    progress(request(opts))
-      .on('progress', state => {
-        bar.show(state.percent, state.speed);
-      })
-      .on('error', err => {
-        return reject(err);
-      })
-      .on('end', () => {
-        bar.done();
-        return resolve(`${dst} has been downloaded!`);
-      })
-      .pipe(fse.createWriteStream(dst))
-      .on('error', err => {
-        return reject(err);
+
+    const maxChunkLen = 20 * 1024 * 1024; // 20M
+
+    return request.get(opts)
+      .on('response', resp => {
+        const resHeaders = resp.headers;
+        const ctLength = resHeaders['content-length'];
+
+        if (ctLength > maxChunkLen) {
+          log.info('the file is big, need to split to pieces...');
+          const rgs = [];
+          const num = parseInt(ctLength / maxChunkLen);
+          const mod = parseInt(ctLength % maxChunkLen);
+          for (let i = 0; i < num; i++) {
+            const rg = {
+              start: i === 0 ? i : i * maxChunkLen + 1,
+              end: (i + 1) * maxChunkLen
+            };
+            rgs.push(rg);
+          }
+
+          if (mod > 0) {
+            const rg = {
+              start: num * maxChunkLen + 1,
+              end: ctLength
+            };
+            rgs.push(rg);
+          }
+
+          const pms = [];
+          const files = [];
+          rgs.forEach((item, idx) => {
+            const copyOpts = _.cloneDeep(opts);
+            copyOpts.headers['Range'] = `bytes=${item.start}-${item.end}`;
+            copyOpts.headers['Connection'] = 'keep-alive';
+
+            const file = path.join(dir, `${ditem.key}${idx}`);
+            files.push(file);
+            const pm = new Promise((resolve, reject) => {
+              request.get(copyOpts)
+                .on('error', err => {
+                  reject(err);
+                })
+                .pipe(fse.createWriteStream(file, { encoding: 'binary' }))
+                .on('close', () => {
+                  resolve(`file${idx} has been downloaded!`);
+                });
+            });
+            pms.push(pm);
+          });
+
+          log.info('now, download pieces...');
+          return Promise.all(pms).then(arr => {
+            // concat files
+            log.info('now, concat pieces...');
+            const ws = fse.createWriteStream(dst, { flag: 'a' });
+            files.forEach(file => {
+              const bf = fse.readFileSync(file);
+              ws.write(bf);
+            });
+            ws.end();
+
+            // delete temp files
+            log.info('now, delete pieces...');
+            files.forEach(file => {
+              fse.unlinkSync(file);
+            });
+
+            return resolve(`${dst} has been downloaded!`);
+          }).catch(err => {
+            return reject(err);
+          });
+        } else {
+          const copyOpts = _.cloneDeep(opts);
+          copyOpts.headers['Range'] = `bytes=0-${ctLength}`;
+          copyOpts.headers['Connection'] = 'keep-alive';
+          let len = 0;
+          return request.get(copyOpts)
+            .on('error', err => {
+              return reject(err);
+            })
+            .on('response', resp => {
+              const ws = fse.createWriteStream(dst, { encoding: 'binary' });
+              resp.on('error', err => {
+                return reject(err);
+              });
+              resp.on('data', chunk => {
+                ws.write(chunk);
+                len += chunk.length;
+                bar.showPer(len / ctLength);
+              });
+              resp.on('end', () => {
+                ws.end();
+                console.log();
+                return resolve(`${dst} has been downloaded!`);
+              });
+            });
+        }
       });
   });
 
