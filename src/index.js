@@ -11,6 +11,7 @@ const run = async () => {
       const opts = {
         page,
         search,
+        pathname: config.pathname
       };
       const keys = await scrapy.findKeys(opts);
       if (!keys || keys.length === 0) {

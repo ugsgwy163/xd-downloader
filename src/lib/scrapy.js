@@ -31,46 +31,57 @@ const findKeys = (opts) => {
   const pm = new Promise((resolve, reject) => {
     let pageUrl = baseUrl;
     let queryObj = {};
+    let reqOpts = {
+      // url: pageUrl,
+      baseUrl,
+      qs: queryObj,
+    };
     if (opts) {
-      if (opts.search && opts.search.trim().length > 0) {
+      if (opts.pathname && opts.pathname.trim().length > 0) {
+        pageUrl = baseUrl + path.join('', opts.pathname.trim());
+        reqOpts.uri = opts.pathname.trim();
+      } else if (opts.search && opts.search.trim().length > 0) {
         pageUrl = `${baseUrl}/video/search`;
+        reqOpts.uri = '/video/search';
         queryObj.search = encodeURI(opts.search.trim());
+      } else {
+        delete reqOpts.baseUrl;
+        reqOpts.url = pageUrl;
       }
 
       if (opts.page && opts.page > 1) {
         queryObj.page = opts.page;
       }
     }
-    let reqOpts = {
-      url: pageUrl,
-      qs: queryObj
-    };
-    // let idx = 0;
-    // let qStr = '';
-    // for (const key in reqOpts.qs) {
-    //   const val = reqOpts.qs[key];
-    //   let str = idx > 0 ? '&' : '';
-    //   str += `${key}=${val}`;
-    //   qStr += str;
-    //   idx += 1;
-    // }
-
-    // if (idx > 0) {
-    //   reqOpts.url += `?${qStr}`;
-    //   delete reqOpts.qs;
-    // }
     Object.assign(reqOpts, baseReqOpts);
-    console.log(reqOpts);
     request(reqOpts, (err, res, body) => {
       if (err) {
         return reject(err);
       }
 
       const $ = cheerio.load(body);
-      const keys = [];
+      const allKeys = [];
       $('.videoblock.videoBox').each((idx, element) => {
         const key = element.attribs['_vkey'];
-        keys.push(key);
+        allKeys.push(key);
+      });
+
+      const skipKeys = [];
+      $('.dropdownHottestVideos .videoblock.videoBox').each((idx, element) => {
+        const key = element.attribs['_vkey'];
+        skipKeys.push(key);
+      });
+
+      $('.dropdownReccomendedVideos .videoblock.videoBox').each((idx, element) => {
+        const key = element.attribs['_vkey'];
+        skipKeys.push(key);
+      });
+
+      const keys = [];
+      allKeys.forEach(k => {
+        if (-1 === skipKeys.indexOf(k)) {
+          keys.push(k);
+        }
       });
 
       return resolve(keys);
