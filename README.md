@@ -2,13 +2,13 @@
 
 Download highest quality videos from [pornhub](https://pornhub.com).
 
-**Version 2.0 is coming now!**
+**Version 2.x is coming now!**
 
 ## Screenshots
 
 ![running](./imgs/running.png)
 
-![files](./imgs/files.png)
+![files](./imgs/files.jpg)
 
 ## Features
 
@@ -24,7 +24,9 @@ Download highest quality videos from [pornhub](https://pornhub.com).
 
 * Download one by one until error occurs or fetch nothing.
 
-* **Download with custom urls.**
+* **Download with custom urls or custom page.**
+
+* **split big file to pieces, avoid downloading incomplete file**
 
 ## Requirement
 
@@ -86,6 +88,8 @@ If you don't need to set up proxy,just keep it empty string.
 `barEmptyChar`: the 'unfinished char' for the progress bar.
 
 `downloadDir`: the directory you want to save videos.
+
+`pathname`: the pathname of the page you want to do download, for example: you wan to donwload files from this page `https://www.pornhub.com/user/xxx/favorite`, then you can set `pathname` as `/user/xxx/favorite`.
 
 ## Download speed
 

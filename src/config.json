@@ -1,5 +1,5 @@
 {
-  "proxyUrl": "http://127.0.0.1:1087",
+  "proxyUrl": "",
   "timeout":  0,
   "search": "",
   "barWidth": 60,
