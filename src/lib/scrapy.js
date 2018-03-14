@@ -155,7 +155,9 @@ const findDownloadInfo = (key) => {
       }
 
       const ditem = parseDownloadInfo(body);
-      ditem.key = finalKey;
+      if (ditem) {
+        ditem.key = finalKey;
+      }
 
       return resolve(ditem);
     });

@@ -20,6 +20,10 @@ const run = async () => {
 
       for (const key of keys) {
         const info = await scrapy.findDownloadInfo(key);
+        if (!info) {
+          log.info('can\'t find this video, download nex one');
+          continue;
+        }
         const result = await scrapy.downloadVideo(info);
         log.info(result);
         console.log('\n');
