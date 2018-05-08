@@ -4,6 +4,10 @@ Download highest quality videos from [pornhub](https://pornhub.com).
 
 **Version 2.x is coming now!**
 
+## statement
+
+**This repo is just for studying, not for other purpose.**
+
 ## Screenshots
 
 ![running](./imgs/running.png)
