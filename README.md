@@ -33,7 +33,7 @@ Download highest quality videos from [pornhub](https://pornhub.com).
 
 * Download one by one until error occurs or fetch nothing.
 
-* **Download with custom urls or custom page.**
+* **Download with custom URLs or custom page.**
 
 * **split big file to pieces, avoid downloading incomplete file**
 
@@ -71,7 +71,7 @@ const urls = [
 ];
 ```
 
-> Add your urls as array.
+> Add your URLs as array.
 
 And then run:
 
@@ -98,12 +98,12 @@ If you don't need to set up proxy,just keep it empty string.
 
 `downloadDir`: the directory you want to save videos.
 
-`pathname`: the pathname of the page you want to do download, for example: you wan to donwload files from this page `https://www.pornhub.com/user/xxx/favorite`, then you can set `pathname` as `/user/xxx/favorite`.
+`pathname`: the pathname of the page you want to do download, for example: you want to download files from this page `https://www.pornhub.com/user/xxx/favorite`, then you can set `pathname` as `/user/xxx/favorite`.
 
 ## Download speed
 
 The speed depends on your local network or proxy.
 
-## LICENCE
+## LICENSE
 
 MIT
