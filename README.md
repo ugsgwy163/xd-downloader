@@ -1,9 +1,6 @@
 
 # pornhub-downloader
 
-## Important Notice: This project is aim to study Node.js, so I will not update this project
-
-
 Download highest quality videos from [pornhub](https://pornhub.com).
 
 **Version 2.x is coming now!**
