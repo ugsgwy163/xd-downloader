@@ -3,7 +3,6 @@
 
 ## Important Notice: This project is aim to study Node.js, so I will not update this project
 
-## 重要通知：本项目旨在学习`Node.js`，从今日（2018-09-09）起不再维护。（年轻虽好，切莫强撸灰飞烟灭 :smile:）
 
 Download highest quality videos from [pornhub](https://pornhub.com).
 
